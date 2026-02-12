@@ -1,0 +1,113 @@
+# Kind Cluster Setup Guide on WSL Ubuntu
+
+## Overview
+
+This document explains how to install Docker, kubectl, and Kind inside
+Ubuntu running on WSL2 and create a Kubernetes cluster.
+
+------------------------------------------------------------------------
+
+## Prerequisites
+
+-   Windows with WSL2 installed
+-   Ubuntu distribution installed in WSL
+-   Docker Desktop installed on Windows
+-   WSL integration enabled in Docker Desktop
+
+Check WSL version (PowerShell):
+
+    wsl -l -v
+
+Ensure version is **2**.
+
+------------------------------------------------------------------------
+
+# Step 1: Verify Docker in WSL
+
+Inside Ubuntu:
+
+    docker ps
+
+If Docker is not working: - Open Docker Desktop - Go to Settings →
+Resources → WSL Integration - Enable Ubuntu - Restart Docker
+
+------------------------------------------------------------------------
+
+# Step 2: Install kubectl
+
+    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+    chmod +x kubectl
+    sudo mv kubectl /usr/local/bin/
+
+Verify:
+
+    kubectl version --client
+
+------------------------------------------------------------------------
+
+# Step 3: Install Kind
+
+    curl -Lo ./kind https://kind.sigs.k8s.io/dl/latest/kind-linux-amd64
+    chmod +x ./kind
+    sudo mv ./kind /usr/local/bin/kind
+
+Verify:
+
+    kind --version
+
+------------------------------------------------------------------------
+
+# Step 4: Create Kind Cluster
+
+### Single Node Cluster
+
+    kind create cluster --name my-cluster
+
+Check nodes:
+
+    kubectl get nodes
+
+------------------------------------------------------------------------
+
+# Step 5: Multi-Node Cluster (Optional)
+
+Create config file:
+
+    vim kind-config.yaml
+
+Add:
+
+``` yaml
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+- role: worker
+- role: worker
+```
+
+Create cluster:
+
+    kind create cluster --name multi-cluster --config kind-config.yaml
+
+------------------------------------------------------------------------
+
+# Step 6: Delete Cluster
+
+    kind delete cluster --name my-cluster
+
+------------------------------------------------------------------------
+
+# Architecture Flow
+
+Windows → Docker Desktop → WSL2 Ubuntu → Kind → Docker Containers
+(Kubernetes Nodes)
+
+------------------------------------------------------------------------
+
+# Conclusion
+
+Kind allows you to run a local Kubernetes cluster inside Docker
+containers on WSL2.\
+It is useful for learning, CI/CD testing, and Kubernetes practice before
+deploying to cloud environments like AWS EKS.
